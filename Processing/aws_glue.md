@@ -121,23 +121,57 @@ A workflow is a container for a set of related jobs, crawlers, and triggers in A
 ![image](images/ETL01.png)   
 
 The architecture shown above uses Lambda to trigger an ETL workflow. Here are the general steps of the architecture: 
-1. First, you build a data lake with Amazon S3 as the primary data store. Ingested data lands in an Amazon S3 bucket that we call the raw zone. 
-2. To make that data available, you have to catalog its schema in the AWS Glue Data Catalog. You can do this using a Lambda function invoked by an Amazon S3 trigger to start an AWS Glue crawler that catalogs the data. To handle errors with Lambda, this architecture uses an Amazon Simple Queue Service (Amazon SQS) queue for  event debugging and retries. 
-3. When the AWS Glue crawler is finished creating the table definition, you invoke a second Lambda function using a CloudWatch Events rule. This step starts an AWS Glue ETL job to convert the data to Apache Parquet format.
-4. The AWS Glue ETL job stores the converted data into the Amazon S3 bucket that we call the processed zone.
-5. As soon as the ETL job finishes, another CloudWatch Events rule sends you an email notification using an Amazon Simple Notification Service (Amazon SNS) topic. This notification indicates that your data was successfully processed.
+- First, you build a data lake with Amazon S3 as the primary data store. Ingested data lands in an Amazon S3 bucket that we call the raw zone. 
+- To make that data available, you have to catalog its schema in the AWS Glue Data Catalog. You can do this using a Lambda function invoked by an Amazon S3 trigger to start an AWS Glue crawler that catalogs the data. To handle errors with Lambda, this architecture uses an Amazon Simple Queue Service (Amazon SQS) queue for  event debugging and retries. 
+- When the AWS Glue crawler is finished creating the table definition, you invoke a second Lambda function using a CloudWatch Events rule. This step starts an AWS Glue ETL job to convert the data to Apache Parquet format.
+- The AWS Glue ETL job stores the converted data into the Amazon S3 bucket that we call the processed zone.
+- As soon as the ETL job finishes, another CloudWatch Events rule sends you an email notification using an Amazon Simple Notification Service (Amazon SNS) topic. This notification indicates that your data was successfully processed.
 
 ## Using Step Functions with AWS Glue
 
 ![image](images/ETL02.png)  
 
 In the diagram above, the services are orchestrated together by AWS Step Functions. 
-1. First, Amazon S3 acts as the landing zone for all ingested data. In this example, this architecture is used to combine two different data sets, one consisting of sales data and the other consisting of marketing data. 
-2. CloudWatch Events schedules the AWS Step Functions state machine to run weekly. 
-3. When the Step Functions state machine is triggered by the CloudWatch Event, it confirms the availability of the datasets through a Lambda function 
-4. The Step Functions state machine will then begin ETL job orchestration. 
-5. Step Functions will start two AWS Glue ETL jobs in parallel. One AWS Glue ETL job will begin to process sales data, while the other begins to process marketing data. 
-6. After the two AWS Glue ETL jobs run, another AWS Glue ETL job combines the two data sets. 
+- First, Amazon S3 acts as the landing zone for all ingested data. In this example, this architecture is used to combine two different data sets, one consisting of sales data and the other consisting of marketing data. 
+- CloudWatch Events schedules the AWS Step Functions state machine to run weekly. 
+- When the Step Functions state machine is triggered by the CloudWatch Event, it confirms the availability of the datasets through a Lambda function 
+- The Step Functions state machine will then begin ETL job orchestration. 
+- Step Functions will start two AWS Glue ETL jobs in parallel. One AWS Glue ETL job will begin to process sales data, while the other begins to process marketing data. 
+- After the two AWS Glue ETL jobs run, another AWS Glue ETL job combines the two data sets. 
 
+## AWS Glue Studio
+- Visual interface for ETL workflow
+- Visual Job Editor
+    - Create DAG's for complex workflow
+    - Source includes S3, Kinesis, Kafka and JDBC
+    - Transform/ sample/ join
+    - Support Partitioning
+- Visual job Dashboard
+
+## AWS Glue DataBrew
+- A visual data preparation tool
+- Input from S3, data warehouse
+- Over 250 ready-made transformation
+- You can create receipe of transformation
+- Security
+    - Can integrate with KMS(with customer master key only)
+    - SSL in transit
+    - IAM can restrict who can do what
+    - Cloudwatch and CloudTrail
+
+## AWS Glue Elastic View
+- Build Materialized view from Aurora, RDS, DynamoDB
+- Those view can be used by Redshift, ElasticSearch, S3, DynamoDB, Aurora and RDS
+- SQL Interface
+- Handles any copying or combining/replicating data needed
+- Monitors for changes and continously data updates
+- Serverless
+
+## Use Cases
+- Build event-driven ETL (extract, transform, and load) pipelines
+- Create a unified catalog to find data across multiple data stores
+- Create, run, and monitor ETL jobs without coding (AWS Glue Studio)
+- Explore data with self-service visual data preparation (AWS Glue DataBrew)
+- Build materialized views to combine and replicate data (in preview) (AWS Glue Elastic Views) 
 
 
